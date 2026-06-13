@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>诺娃写手 · Nova — 本地优先的小说创作桌面应用</title>
+<meta name="description" content="诺娃写手是一款基于 Tauri 2 + Vue 3 的本地小说创作桌面应用：章节编辑、AI 多 Agent 协作、剧情时间轴、人物关系星图。Windows / macOS / Linux 原生支持。" />
+<meta property="og:title" content="诺娃写手 · Nova" />
+<meta property="og:description" content="本地优先的小说创作桌面应用 · 章节 + AI 协作 + 结构化设定" />
+<meta name="theme-color" content="#6366f1" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%A5%3C/text%3E%3C/svg%3E" />
+
+<!--
+  TODO: 替换下面三个下载链接为实际的 GitHub Release 资源 URL。
+  典型模式：
+    https://github.com/<owner>/<repo>/releases/latest/download/<asset-filename>
+
+  常见 Tauri 产物文件名（你 npm run tauri build 之后在 src-tauri/target/release/bundle/ 里看到的）：
+    Windows  →  nuoshou_0.1.0_x64-setup.exe   或  nuoshou_0.1.0_x64_zh-CN.msi
+    macOS    →  nuoshou_0.1.0_aarch64.dmg     或  nuoshou_0.1.0_x64.dmg
+    Linux    →  nuoshou_0.1.0_amd64.AppImage  或  nuoshou_0.1.0_amd64.deb
+
+  全文搜 "TODO-release" 一次性改完。
+-->
+
+<style>
+:root {
+  --bg: #fafbff;
+  --bg-card: #ffffff;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --accent: #6366f1;
+  --accent-2: #a855f7;
+  --accent-soft: #eef0ff;
+  --shadow: 0 1px 3px rgba(15,23,42,.06), 0 8px 24px rgba(15,23,42,.06);
+  --shadow-hover: 0 1px 3px rgba(15,23,42,.08), 0 16px 40px rgba(99,102,241,.18);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1020;
+    --bg-card: #131a2e;
+    --text: #e6e9f5;
+    --text-muted: #8b94b3;
+    --border: #1f2742;
+    --accent: #818cf8;
+    --accent-2: #c084fc;
+    --accent-soft: #1c1d3d;
+    --shadow: 0 1px 3px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    --shadow-hover: 0 1px 3px rgba(0,0,0,.5), 0 16px 40px rgba(129,140,248,.25);
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+               "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+.header {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+.brand-icon {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-radius: 8px; color: #fff;
+  font-size: 16px;
+}
+.nav { display: flex; gap: 22px; align-items: center; }
+.nav a { color: var(--text-muted); font-size: 14px; }
+.nav a:hover { color: var(--text); text-decoration: none; }
+
+/* ── Hero ──────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  padding: 96px 24px 64px;
+  text-align: center;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(60% 60% at 50% 0%,
+              color-mix(in srgb, var(--accent) 18%, transparent) 0%,
+              transparent 60%);
+  pointer-events: none;
+}
+.hero-inner {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px; font-weight: 600;
+  margin-bottom: 24px;
+}
+.hero h1 {
+  font-size: 56px; line-height: 1.1; margin: 0 0 18px;
+  letter-spacing: -0.02em;
+}
+.hero h1 .gradient {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+.hero p.lead {
+  font-size: 18px;
+  color: var(--text-muted);
+  max-width: 580px;
+  margin: 0 auto 36px;
+}
+
+/* ── Download buttons ──────────────────────────────────────────────────── */
+.downloads {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.download-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 22px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .2s, border-color .2s;
+  box-shadow: var(--shadow);
+  text-decoration: none;
+}
+.download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--accent);
+  text-decoration: none;
+}
+.download-btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff; border-color: transparent;
+}
+.download-btn .os-icon { font-size: 20px; }
+.download-btn .os-meta { display: flex; flex-direction: column; line-height: 1.1; text-align: left; }
+.download-btn .os-name { font-size: 15px; font-weight: 700; }
+.download-btn .os-sub { font-size: 11px; opacity: .7; margin-top: 2px; font-weight: 500; }
+.hero-note { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.hero-note a { color: var(--text-muted); text-decoration: underline; }
+
+/* ── Section ───────────────────────────────────────────────────────────── */
+.section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 64px 24px;
+}
+.section-head { text-align: center; margin-bottom: 48px; }
+.section-eyebrow {
+  display: inline-block;
+  font-size: 12px; font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.section h2 {
+  font-size: 36px; margin: 0 0 12px;
+  letter-spacing: -0.01em;
+}
+.section-sub { color: var(--text-muted); font-size: 16px; }
+
+/* ── Features grid ─────────────────────────────────────────────────────── */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.feature {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 24px;
+  transition: transform .15s, box-shadow .2s;
+}
+.feature:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+.feature-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+.feature h3 { margin: 0 0 8px; font-size: 17px; }
+.feature p { margin: 0; color: var(--text-muted); font-size: 14px; }
+
+/* ── Quickstart ────────────────────────────────────────────────────────── */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  counter-reset: step;
+}
+.step {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 24px;
+  position: relative;
+  counter-increment: step;
+}
+.step::before {
+  content: counter(step);
+  position: absolute; top: -14px; left: 24px;
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff; font-weight: 700;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+.step h3 { margin: 6px 0 8px; font-size: 16px; }
+.step p { margin: 0; color: var(--text-muted); font-size: 14px; }
+
+/* ── FAQ ───────────────────────────────────────────────────────────────── */
+.faq-item {
+  border-bottom: 1px solid var(--border);
+  padding: 18px 0;
+}
+.faq-item:last-child { border-bottom: none; }
+.faq-q {
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  list-style: none;
+}
+.faq-q::-webkit-details-marker { display: none; }
+.faq-q::after { content: '+'; color: var(--accent); font-size: 20px; transition: transform .2s; }
+.faq-item[open] .faq-q::after { transform: rotate(45deg); }
+.faq-a { margin-top: 10px; color: var(--text-muted); font-size: 14px; }
+.faq-a code {
+  background: var(--accent-soft);
+  padding: 2px 6px; border-radius: 4px; font-size: 13px;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.footer a { color: var(--text-muted); }
+
+/* ── Mobile ────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .hero { padding: 64px 20px 48px; }
+  .hero h1 { font-size: 40px; }
+  .hero p.lead { font-size: 16px; }
+  .nav { display: none; }
+  .section { padding: 48px 20px; }
+  .section h2 { font-size: 28px; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">🔥</div>
+      <span>诺娃写手</span>
+    </div>
+    <nav class="nav">
+      <a href="#features">功能</a>
+      <a href="#download">下载</a>
+      <a href="#quickstart">开始</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <span class="hero-eyebrow">✨ 本地优先 · 无数据库 · 跨平台</span>
+    <h1>用<span class="gradient">诺娃写手</span><br />把脑中的故事写完</h1>
+    <p class="lead">
+      章节编辑 + AI 多 Agent 协作 + 结构化设定（人物关系星图 / 剧情时间轴）。
+      所有内容以纯文本和 JSON 存在你自己电脑上，随你拷贝、备份、版本化。
+    </p>
+
+    <div class="downloads" id="download">
+      <a class="download-btn primary" href="#TODO-release-windows" download>
+        <span class="os-icon">⊞</span>
+        <span class="os-meta">
+          <span class="os-name">Windows</span>
+          <span class="os-sub">x64 · .exe / .msi</span>
+        </span>
+      </a>
+      <a class="download-btn" href="#TODO-release-macos" download>
+        <span class="os-icon"></span>
+        <span class="os-meta">
+          <span class="os-name">macOS</span>
+          <span class="os-sub">Apple Silicon · .dmg</span>
+        </span>
+      </a>
+      <a class="download-btn" href="#TODO-release-linux" download>
+        <span class="os-icon">🐧</span>
+        <span class="os-meta">
+          <span class="os-name">Linux</span>
+          <span class="os-sub">x64 · .AppImage / .deb</span>
+        </span>
+      </a>
+    </div>
+    <p class="hero-note">
+      或前往 <a href="#TODO-release-all">所有版本与历史发布</a> 选择特定版本 · 当前版本 v0.1.0
+    </p>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="section-head">
+    <div class="section-eyebrow">功能</div>
+    <h2>为写长篇而生</h2>
+    <p class="section-sub">不是云端笔记 App，也不是聊天框 + 一栏 prompt 的玩具。</p>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">📖</div>
+      <h3>章节 + 卷两级结构</h3>
+      <p>多卷分组，章节可拖拽归卷；字数统计、草稿 / 已完成状态、Ctrl+S 即存，一键导出整本 Markdown / TXT。</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🤖</div>
+      <h3>AI 多 Agent 协作</h3>
+      <p>设定 Agent、剧情 Agent、文笔 Agent 并行跑，从不同维度给当前章节反馈。支持 DeepSeek、通义、GLM、Claude、Ollama 等 OpenAI 兼容 Provider。</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">👥</div>
+      <h3>人物关系星图</h3>
+      <p>圆形角色节点 + 彩色关系连线，6 种内置关系类型（敌对 / 爱慕 / 师徒 / 朋友 / 家人 / 其他）；右键改类型、双击改名、拖拽连线建关系。</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📋</div>
+      <h3>剧情时间轴</h3>
+      <p>双轨道（明线 / 暗线）卡片式段落，每张卡片记录人物 / 地点 / 事件；章节或时间为轴，拖拽即排序，Delete 即删。</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">💾</div>
+      <h3>本地优先</h3>
+      <p>所有数据是你选的工作区文件夹下的 <code>.md</code> 和 <code>.json</code>。没有云、没有账户、没有锁定。复制走或 Git 管理都行。</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🎨</div>
+      <h3>原生跨平台</h3>
+      <p>基于 Tauri 2，一份代码三个系统；浅色 / 深色主题一键切换；小说设定窗口可分离独立摆放。</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="quickstart">
+  <div class="section-head">
+    <div class="section-eyebrow">开始</div>
+    <h2>三步开写</h2>
+    <p class="section-sub">从下载到第一个章节大概 2 分钟。</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <h3>下载并安装</h3>
+      <p>选你的系统对应安装包。Windows 首次启动 SmartScreen 拦截，点「更多信息」→「仍要运行」。</p>
+    </div>
+    <div class="step">
+      <h3>选一个工作区文件夹</h3>
+      <p>启动后选任意空文件夹作为工作区，所有小说都会作为子目录存在那里。建议放在云盘外的本地路径。</p>
+    </div>
+    <div class="step">
+      <h3>配 AI Provider（可选）</h3>
+      <p>在「⚙ 设置 → 模型」填一个 OpenAI 兼容 Key 和 Base URL，就能用 AI Agent。不配也能纯手写。</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="section-head">
+    <div class="section-eyebrow">FAQ</div>
+    <h2>常见问题</h2>
+  </div>
+
+  <details class="faq-item">
+    <summary class="faq-q">数据存在哪？能搬到别的电脑吗？</summary>
+    <div class="faq-a">
+      存在你启动时选的「工作区目录」里，全部是 <code>.md</code> 和 <code>.json</code>。整个目录直接打包拷贝过去就行，新机器装好应用启动时把工作区目录指过去即可。
+    </div>
+  </details>
+
+  <details class="faq-item">
+    <summary class="faq-q">支持哪些 AI Provider？</summary>
+    <div class="faq-a">
+      任何 OpenAI 兼容的 Chat Completion 接口：DeepSeek、通义千问、智谱 GLM、Moonshot、Anthropic 官方代理、本地 Ollama / LM Studio 都行。在「⚙ 设置 → 模型」里填 Base URL 和 API Key 即可。
+    </div>
+  </details>
+
+  <details class="faq-item">
+    <summary class="faq-q">需要联网吗？</summary>
+    <div class="faq-a">
+      章节编辑、设定、导出完全离线。只有调用 AI Agent 时才会向你配置的 Provider 发请求。
+    </div>
+  </details>
+
+  <details class="faq-item">
+    <summary class="faq-q">Windows 提示「未知发布者」？</summary>
+    <div class="faq-a">
+      自签名问题，不影响使用。SmartScreen 弹窗点「更多信息」→「仍要运行」即可。介意的话也可以从源码 <code>npm run tauri build</code> 自己编一个。
+    </div>
+  </details>
+
+  <details class="faq-item">
+    <summary class="faq-q">macOS 提示「无法打开，因为无法验证开发者」？</summary>
+    <div class="faq-a">
+      终端执行 <code>xattr -dr com.apple.quarantine /Applications/诺娃写手.app</code> 然后再双击启动。
+    </div>
+  </details>
+
+  <details class="faq-item">
+    <summary class="faq-q">免费吗？</summary>
+    <div class="faq-a">
+      当前阶段是。后续可能引入面向重度用户的付费功能，但章节编辑、AI 集成、设定编辑器这些核心创作能力会保持免费。
+    </div>
+  </details>
+</section>
+
+<footer class="footer">
+  <p>
+    诺娃写手 · Nova ·
+    <a href="#TODO-github-repo">GitHub</a> ·
+    <a href="#TODO-issues">反馈 Bug</a>
+  </p>
+  <p style="margin-top:8px;opacity:.6">Built with Tauri 2 + Vue 3 · © 2026</p>
+</footer>
+
+</body>
+</html>
