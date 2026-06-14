@@ -11,16 +11,14 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%A5%3C/text%3E%3C/svg%3E" />
 
 <!--
-  TODO: 替换下面三个下载链接为实际的 GitHub Release 资源 URL。
-  典型模式：
-    https://github.com/<owner>/<repo>/releases/latest/download/<asset-filename>
-
-  常见 Tauri 产物文件名（你 npm run tauri build 之后在 src-tauri/target/release/bundle/ 里看到的）：
-    Windows  →  nuoshou_0.1.0_x64-setup.exe   或  nuoshou_0.1.0_x64_zh-CN.msi
-    macOS    →  nuoshou_0.1.0_aarch64.dmg     或  nuoshou_0.1.0_x64.dmg
-    Linux    →  nuoshou_0.1.0_amd64.AppImage  或  nuoshou_0.1.0_amd64.deb
-
-  全文搜 "TODO-release" 一次性改完。
+  下载链接指向 sameul/writer-releases 仓库的 Releases（Pages 和 Releases 同仓库）。
+  发版时 workflow 会自动 sed 替换下面的 v0.1.0 → 新 tag，无需手工改动。
+  Tauri 产物文件名格式（npm run tauri build 后看 src-tauri/target/.../bundle/）：
+    Windows  →  诺娃写手_0.1.0_x64-setup.exe
+    macOS    →  诺娃写手_0.1.0_aarch64.dmg / x64.dmg
+    Linux    →  诺娃写手_0.1.0_amd64.AppImage / amd64.deb
+  注意 productName 是中文，部分 Tauri 版本会把中文转成 ASCII slug —— 第一次发完
+  release 后看准实际文件名再回来对齐。
 -->
 
 <style>
@@ -319,21 +317,21 @@ a:hover { text-decoration: underline; }
     </p>
 
     <div class="downloads" id="download">
-      <a class="download-btn primary" href="#TODO-release-windows" download>
+      <a class="download-btn primary" href="https://github.com/sameul/writer-releases/releases/download/v0.1.0/诺娃写手_0.1.0_x64-setup.exe" download>
         <span class="os-icon">⊞</span>
         <span class="os-meta">
           <span class="os-name">Windows</span>
           <span class="os-sub">x64 · .exe / .msi</span>
         </span>
       </a>
-      <a class="download-btn" href="#TODO-release-macos" download>
+      <a class="download-btn" href="https://github.com/sameul/writer-releases/releases/download/v0.1.0/诺娃写手_0.1.0_aarch64.dmg" download>
         <span class="os-icon"></span>
         <span class="os-meta">
           <span class="os-name">macOS</span>
           <span class="os-sub">Apple Silicon · .dmg</span>
         </span>
       </a>
-      <a class="download-btn" href="#TODO-release-linux" download>
+      <a class="download-btn" href="https://github.com/sameul/writer-releases/releases/download/v0.1.0/诺娃写手_0.1.0_amd64.AppImage" download>
         <span class="os-icon">🐧</span>
         <span class="os-meta">
           <span class="os-name">Linux</span>
@@ -342,7 +340,7 @@ a:hover { text-decoration: underline; }
       </a>
     </div>
     <p class="hero-note">
-      或前往 <a href="#TODO-release-all">所有版本与历史发布</a> 选择特定版本 · 当前版本 v0.1.0
+      或前往 <a href="https://github.com/sameul/writer-releases/releases">所有版本与历史发布</a> 选择特定版本 · 当前版本 v0.1.0
     </p>
   </div>
 </section>
@@ -463,8 +461,8 @@ a:hover { text-decoration: underline; }
 <footer class="footer">
   <p>
     诺娃写手 · Nova ·
-    <a href="#TODO-github-repo">GitHub</a> ·
-    <a href="#TODO-issues">反馈 Bug</a>
+    <a href="https://github.com/sameul/writer-releases/releases">所有版本</a> ·
+    <a href="https://github.com/sameul/writer-releases/issues">反馈 Bug</a>
   </p>
   <p style="margin-top:8px;opacity:.6">Built with Tauri 2 + Vue 3 · © 2026</p>
 </footer>
